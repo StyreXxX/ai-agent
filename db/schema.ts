@@ -5,7 +5,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: text("email").notNull().unique(),
   agentCredits: integer('agentCredits').default(3),
-  usageCreddits: integer('ussageCredits').default(100),
+  usageCredits: integer('usageCredits').default(100),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
