@@ -25,6 +25,7 @@ const quickSuggestions = [
 
 import { Bot, UserCheck, Code2 } from "lucide-react"
 import axios from 'axios'
+import AIAgentQuestions from './AIAgentQuestions'
 
 const templates = [
   {
@@ -58,8 +59,17 @@ const templates = [
 
 type AgentConfigResp={
     status:'needs_clarification'|'ready',
-    clarificationQuestions: any,
+    clarificationQuestions: ClarificationQuestion[],
     config: any
+}
+
+export type ClarificationQuestion = {
+    id: string;
+    question: string
+    type: "single select" | "multi_select" | "text" | "number" | "date" | "time";
+    options: string[];
+    allowCustom: boolean;
+    customPlaceholder: string;
 }
 
 function CreateAgent() {
@@ -145,6 +155,8 @@ function CreateAgent() {
       </div>}
 
         {configResult && <div className='mt-10 p-5 border rounded-2xl shadow-sm'>
+            {configResult.status == 'needs_clarification' && 
+                <AIAgentQuestions questionList = {configResult.clarificationQuestions} />}
             <p>{JSON.stringify(configResult)}</p>
         </div>}
     </div>
