@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from '@/components/ui/button'
-import { ArrowUp, Plus } from 'lucide-react'
-import React from 'react'
+import { ArrowUp, Loader2, Loader2Icon, Plus } from 'lucide-react'
+import React, { useState } from 'react'
 
 const quickSuggestions = [
     {
@@ -24,6 +24,7 @@ const quickSuggestions = [
 ]
 
 import { Bot, UserCheck, Code2 } from "lucide-react"
+import axios from 'axios'
 
 const templates = [
   {
@@ -55,9 +56,30 @@ const templates = [
   },
 ]
 
+type AgentConfigResp={
+    status:'needs_clarification'|'ready',
+    clarificationQuestions: any,
+    config: any
+}
+
 function CreateAgent() {
 
     const [prompt,setPrompt] = React.useState('');
+    const [configResult, setConfigResult] = useState<AgentConfigResp | null>(null);
+    const [loading,setLoading] = useState(false);
+
+    const OnsSubmit = async () => {
+    setLoading(true);
+    try {
+        const result = await axios.post('/api/agent/configure', { prompt });
+        setConfigResult(result.data);
+    } catch (e) {
+        console.error(e);
+        // optionally show a toast: "Something went wrong, please try again"
+    } finally {
+        setLoading(false);
+    }
+}
 
     return (
     <div>
@@ -78,15 +100,19 @@ function CreateAgent() {
                     <Plus/>
                 </Button>
             </div>
-            <Button size ={'icon'} className={'h-9 w-9 rounded-full bg-purple-600'}>
-                <ArrowUp/>
+        <Button 
+        disabled={loading}
+        onClick={OnsSubmit} size ={'icon'} className={'h-9 w-9 rounded-full bg-purple-600'}>
+                {loading ? <Loader2 className='h-4 w-4 animate-spin' /> : <ArrowUp />}
             </Button>
         </div>
       </div>
 
       <div className='mt-3 flex gap-2'>
         {quickSuggestions.map((suggestion, index) => (
-            <Button variant ={'outline'} 
+            <Button 
+            key={index}
+            variant ={'outline'} 
             onClick={() => setPrompt(suggestion.prompt)}
             className='hover:text-purple-700 hover:bg-purple-200 hover:border-purple-700'>
                 {suggestion.label}
@@ -94,11 +120,18 @@ function CreateAgent() {
         ))}
       </div>
 
-      <div className='mt-10'>
+      {loading ? <div className ='flex gap-2 items-ceter p-5 mt-7 border rounded-xl shadhow-sm'>
+        <Loader2Icon className = 'animate-spin' />
+        <h2>Generating Agent Config...</h2>
+      </div>:
+
+      !configResult&& <div className='mt-10'>
         <h2 className='flex text-lg justify-between items-center font-semibold'>Get Started<span className= 'text-sm font-medium'> View All</span></h2>
         <div className='grid grid-cols-1 gap-4 md:grid-cols-3 mt-3'>
             {templates.map((template,index) => (
-                <div className={`border rounded-2xl p-5 hover:cursor-pointer hover:shadow-lg ${template.border} ${template.glow} `}>
+                <div 
+                    key={template.title}
+                    className={`border rounded-2xl p-5 hover:cursor-pointer hover:shadow-lg ${template.border} ${template.glow} `}>
                     <template.icon className={`h-12 w-12 p-2 ${template.iconBg} ${template.iconColor} rounded-xl`} />
                     <div className='mt-6'>
                         <h2 className ='font-semibold text-foreground'>
@@ -109,7 +142,11 @@ function CreateAgent() {
                 </div>
             ))}
         </div>
-      </div>
+      </div>}
+
+        {configResult && <div className='mt-10 p-5 border rounded-2xl shadow-sm'>
+            <p>{JSON.stringify(configResult)}</p>
+        </div>}
     </div>
   )
 }
