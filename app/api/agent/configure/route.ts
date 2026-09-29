@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { AgentConfigSystemPrompt } from "@/data/Prompt";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
+import { db, tools } from "@/db";
 
-const MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]; // primary, then fallback
+const MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"]; // primary, then fallback
 const MAX_ATTEMPTS_PER_MODEL = 3;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -11,9 +12,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function isRetryable(e: any) {
     const status = e?.status ?? e?.code;
     const msg = String(e?.message ?? "");
+
     return (
-        [429, 500, 503, 504].includes(status) ||
-        /UNAVAILABLE|overloaded|high demand|RESOURCE_EXHAUSTED/i.test(msg)
+        [500, 503, 504].includes(status) ||
+        /UNAVAILABLE|overloaded|high demand/i.test(msg)
     );
 }
 
@@ -24,6 +26,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
+    const aiTools = await db.select({
+        slug:tools.slug
+    }).from(tools)
+    
     const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_CLOUD_GEMINI_API_KEY });
     let lastError: unknown;
 
@@ -32,7 +38,7 @@ export async function POST(req: NextRequest) {
             try {
                 const response = await ai.models.generateContent({
                     model,
-                    contents: AgentConfigSystemPrompt.replace("{USER_PROMPT}", prompt),
+                    contents: AgentConfigSystemPrompt.replace("{USER_PROMPT}", prompt).replace('{AVAILABLE_TOOLS}', aiTools.toString()),
                     config: {
                         // thinkingLevel is only for Gemini 3 models; 2.5 uses thinkingBudget
                         thinkingConfig: model.startsWith("gemini-3")

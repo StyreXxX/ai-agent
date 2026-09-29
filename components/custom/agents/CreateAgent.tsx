@@ -81,16 +81,24 @@ type AgentConfigResp={
 
         const OnsSubmit = async () => {
             setLoading(true);
+
             try {
-                const result = await axios.post('/api/agent/configure', { prompt });
+                const result = await axios.post('/api/agent/configure', {
+                    prompt
+                });
+
                 console.log("Config Result:", result.data);
                 setConfigResult(result.data);
+
             } catch (e: unknown) {
-                console.error(
-                    "Configure Error:",
-                    axios.isAxiosError(e) ? e.response?.data || e : e
-                );
-                // optionally show a toast: "Something went wrong, please try again"
+                console.error("FULL ERROR:", e);
+
+                if (axios.isAxiosError(e)) {
+                    console.error("Status:", e.response?.status);
+                    console.error("Data:", e.response?.data);
+                    console.error("Message:", e.message);
+                }
+
             } finally {
                 setLoading(false);
             }
