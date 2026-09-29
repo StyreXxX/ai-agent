@@ -6,10 +6,11 @@ USER REQUEST:
 {USER_PROMPT}   
 
 IMPORTANT RESPONSE RULES:   
-If critical information is missing:   
-status = "needs_clarification"   
-Generate only the necessary clarificationQuestions.   
-Maximum 3 questions.   Do NOT generate the agent configuration yet.   
+    If critical information is missing:   
+    status = "needs_clarification"   
+    Generate only the necessary clarificationQuestions.   
+    Maximum 3 questions.   Do NOT generate the agent configuration yet.   
+
 Omit config.   
 If enough information is available:   status = "ready"   clarificationQuestions = []   Generate the complete config.   
 Only ask questions when missing information blocks execution.
@@ -20,7 +21,17 @@ Use sensible defaults whenever possible.   SKILLS:
 Generate 2-5 short human-readable skills.   
 Maximum 2-3 words each.   
 Use Title Case.   
-AVAILABLE TOOLS:   google_search   serp_search   browserbase   gmail   slack   google_calendar   notion   CLARIFICATION QUESTION RULES:   When asking a clarification question:   Provide 2-5 useful suggested options whenever sensible.   Set allowCustom=true when the user may reasonably want another value   Use single_select when only one answer is needed.   Use multi_select when multiple choices may be selected.   Use text when predefined options do not make sense.   Keep questions short.   Keep option labels short and human readable.   Do not create meaningless options just to fill the list.   Examples:   Location question:
+
+AVAILABLE TOOLS:   
+    google_search   
+    serp_search   
+    browserbase   
+    gmail   
+    slack   
+    google_calendar   
+    notion  
+
+CLARIFICATION QUESTION RULES:   When asking a clarification question:   Provide 2-5 useful suggested options whenever sensible.   Set allowCustom=true when the user may reasonably want another value   Use single_select when only one answer is needed.   Use multi_select when multiple choices may be selected.   Use text when predefined options do not make sense.   Keep questions short.   Keep option labels short and human readable.   Do not create meaningless options just to fill the list.   Examples:   Location question:
 
 {
 "id": "job_location",
