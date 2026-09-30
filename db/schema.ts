@@ -20,7 +20,7 @@ export const tools = pgTable("tools", {
   type: varchar("type", { length: 50 }).notNull(),
   provider: varchar("provider", { length: 100 }).notNull(),
 
-  icon: varchar("icon", { length: 100 }),
+  icon: text("icon"),
 
   status: varchar("status", { length: 50 }).default("active"),
 
@@ -51,6 +51,23 @@ export const tools = pgTable("tools", {
 }
 
 )
+
+export const AgentConfig = pgTable("agentConfig", {
+    id: serial("id").primaryKey(),
+    userEmail: text("userEmail").references(() => users.email),
+    agentId: varchar("agentId", { length: 100 }).notNull().unique(),
+    name: varchar("name", { length: 150 }),
+    agentImage: varchar("agentImage", { length: 500 }),
+    description: text("description"),
+    Instructions: text("instructions"),
+    objective: text("objective"),
+    tools: jsonb("tools"),
+    skills: jsonb("skills"),
+    schedule: jsonb("schedule"),
+    outputFormat: text("outputFormat"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 
 export type User = typeof users.$inferSelect;

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { AgentConfigSystemPrompt } from "@/data/Prompt";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
-import { db, tools } from "@/db";
+import { AgentConfig, db, tools } from "@/db";
+import { currentUser } from "@clerk/nextjs/server";
 
 const MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"]; // primary, then fallback
 const MAX_ATTEMPTS_PER_MODEL = 3;
@@ -21,6 +22,7 @@ function isRetryable(e: any) {
 
 export async function POST(req: NextRequest) {
     const { prompt } = await req.json();
+    const user = await currentUser();
 
     if (!prompt?.trim()) {
         return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
@@ -48,6 +50,21 @@ export async function POST(req: NextRequest) {
                         responseSchema: AgentConfigRespSchema,
                     },
                 });
+
+                //To Save final Agent Config 
+                const aiOutput = JSON.parse(response.text ?? "{}");
+
+                if(aiOutput.status =='ready'){
+                    const agentId = crypto.randomUUID();
+                    const dbResult = await db.insert(AgentConfig).values({
+                        ...aiOutput.config,
+                        agentImage: 'https://api.dicebear.com/10.x/marbles/svg?noseProbability=0&seed='+ agentId,
+                        agentId: agentId,
+                        userEmail: user?.primaryEmailAddress?.emailAddress
+                    }).returning();
+                    return NextResponse.json(dbResult);
+                }
+
 
                 return NextResponse.json(JSON.parse(response.text ?? "{}"));
             } catch (e) {
