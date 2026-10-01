@@ -26,6 +26,7 @@ const quickSuggestions = [
 import { Bot, UserCheck, Code2 } from "lucide-react"
 import axios from 'axios'
 import AIAgentQuestions from './AIAgentQuestions'
+import { NewAgentCard } from './NewAgentCard'
 
 const templates = [
   {
@@ -72,10 +73,35 @@ type AgentConfigResp={
         customPlaceholder: string;
     }
 
+export type CreatedAgentType = {
+        id: number,
+        userEmail: string,
+        agentId: string,
+        name: string,
+        agentImage: string,
+        description: string,
+        instructions: string,
+        objective: string,
+        tools: any,
+        skills: string[],
+        schedule: AgentSchedule,
+        outputFormat: string,
+        status: string,
+        createdAt: string,
+        updatedAt: string,
+    }
+
+    export type AgentSchedule = {
+        type: "once" | "recurring" | "manual"
+        frequency?: "hourly" | "daily" | "weekly" | "monthly"
+        time: string
+    }
+
     function CreateAgent() {
 
         const [prompt,setPrompt] = React.useState('');
         const [configResult, setConfigResult] = useState<AgentConfigResp | null>(null);
+        const [createdAgent, setCreatedAgent] = useState<CreatedAgentType | null>(null);
         const [loading,setLoading] = useState(false);
         
 
@@ -89,6 +115,9 @@ type AgentConfigResp={
 
                 console.log("Config Result:", result.data);
                 setConfigResult(result.data);
+                if(result.data?.status_ =='ready'){
+                    setCreatedAgent(result.data);
+                }
 
             } catch (e: unknown) {
                 console.error("FULL ERROR:", e);
@@ -121,6 +150,7 @@ type AgentConfigResp={
 
                 console.log("Config Result:", result.data);
                 setConfigResult(result.data);
+                setCreatedAgent(result.data);
 
             } catch (e: any) {
                 console.error("Configure Error:", e.response?.data || e);
@@ -197,7 +227,8 @@ type AgentConfigResp={
                         <AIAgentQuestions questionList = {configResult.clarificationQuestions} 
                         onComplete={(resp:any)=>onComplete(resp)}
                         />}
-                    <p>{JSON.stringify(configResult)}</p>
+                    {/* <p>{JSON.stringify(configResult)}</p> */}
+                    <NewAgentCard createdAgent = {createdAgent} />
                 </div>}
         </div>
   )

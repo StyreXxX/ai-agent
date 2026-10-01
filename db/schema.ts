@@ -59,11 +59,12 @@ export const AgentConfig = pgTable("agentConfig", {
     name: varchar("name", { length: 150 }),
     agentImage: varchar("agentImage", { length: 500 }),
     description: text("description"),
-    Instructions: text("instructions"),
+    instructions: text("instructions"),
     objective: text("objective"),
     tools: jsonb("tools"),
     skills: jsonb("skills"),
     schedule: jsonb("schedule"),
+    status: varchar('status').default('active'), //Active, pause
     outputFormat: text("outputFormat"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

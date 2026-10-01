@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
                         agentId: agentId,
                         userEmail: user?.primaryEmailAddress?.emailAddress
                     }).returning();
-                    return NextResponse.json(dbResult);
+                    return NextResponse.json({ ...dbResult[0], status_: 'ready'});
                 }
 
 
