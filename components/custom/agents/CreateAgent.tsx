@@ -222,14 +222,19 @@ export type CreatedAgentType = {
                 </div>
             </div>}
 
-                {configResult && <div className='mt-10 p-5 border rounded-2xl shadow-sm'>
-                    {configResult.status == 'needs_clarification' && 
-                        <AIAgentQuestions questionList = {configResult.clarificationQuestions} 
-                        onComplete={(resp:any)=>onComplete(resp)}
-                        />}
-                    {/* <p>{JSON.stringify(configResult)}</p> */}
-                    <NewAgentCard createdAgent = {createdAgent} />
-                </div>}
+                {configResult && 
+                    configResult.status == 'needs_clarification' && 
+                        <div className='mt-10 p-5 border rounded-2xl shadow-sm'>
+                            <AIAgentQuestions questionList = {configResult.clarificationQuestions} 
+                            onComplete={(resp:any)=>onComplete(resp)}
+                            />
+                        </div>
+
+                }        
+                
+                {/* <p>{JSON.stringify(configResult)}</p> */}
+
+                {createdAgent && <NewAgentCard createdAgent = {createdAgent} />}
         </div>
   )
 }
