@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import AgentEditSheet from './AgentEditSheet';
 
 type Props = {
   createdAgent: CreatedAgentType | null;
@@ -45,9 +46,11 @@ export function NewAgentCard({ createdAgent }: Props) {
       </div>
 
       <div className='flex gap-2 items-center text-muted-foreground shrink-0'>
-        <Button variant={'ghost'} size={'icon'}>
-          <Pencil className='h-4 w-4' />
-        </Button>
+        <AgentEditSheet agentConfig={createdAgent}>
+          <Button variant={'ghost'} size={'icon'}>
+            <Pencil className='h-4 w-4' />
+          </Button>
+        </AgentEditSheet>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
