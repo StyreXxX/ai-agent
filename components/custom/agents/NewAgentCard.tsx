@@ -15,9 +15,10 @@ import AgentEditSheet from './AgentEditSheet';
 
 type Props = {
   createdAgent: CreatedAgentType | null;
+  setUpdatedAgent: any
 }
 
-export function NewAgentCard({ createdAgent }: Props) {
+export function NewAgentCard({ createdAgent, setUpdatedAgent }: Props) {
   return (
     <div className='flex items-start justify-between gap-2 border mt-7 p-4 rounded-2xl shadow-md hover:shadow-purple-100'>
       <div className='flex gap-2'>
@@ -46,7 +47,7 @@ export function NewAgentCard({ createdAgent }: Props) {
       </div>
 
       <div className='flex gap-2 items-center text-muted-foreground shrink-0'>
-        <AgentEditSheet agentConfig={createdAgent}>
+        <AgentEditSheet agentConfig={createdAgent} setUpdatedAgent={setUpdatedAgent}>
           <Button variant={'ghost'} size={'icon'}>
             <Pencil className='h-4 w-4' />
           </Button>

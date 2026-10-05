@@ -234,7 +234,8 @@ export type CreatedAgentType = {
                 
                 {/* <p>{JSON.stringify(configResult)}</p> */}
 
-                {createdAgent && <NewAgentCard createdAgent = {createdAgent} />}
+                {createdAgent && <NewAgentCard createdAgent = {createdAgent} 
+                setUpdatedAgent={(value: CreatedAgentType | null)=> setCreatedAgent(value)} />}
         </div>
   )
 }

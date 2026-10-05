@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import axios from 'axios'
 import { Figtree } from 'next/font/google'
 import Provider from './provider';
+import { Toaster } from '@/components/ui/toast';
 
 export const metadata: Metadata = {
   title: "Next.js Premium Startup Boilerplate",
@@ -27,6 +28,7 @@ export default function RootLayout({
           <Provider>
             {children}
           </Provider>
+          <Toaster/>
         </body>
       </html>
     </ClerkProvider>

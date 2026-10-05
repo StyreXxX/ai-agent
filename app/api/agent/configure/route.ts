@@ -4,6 +4,7 @@ import { AgentConfigSystemPrompt } from "@/data/Prompt";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
 import { AgentConfig, db, tools } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 
 const MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"]; // primary, then fallback
 const MAX_ATTEMPTS_PER_MODEL = 3;
@@ -84,46 +85,50 @@ export async function POST(req: NextRequest) {
     );
 }
 
-/*
-import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { AgentConfigSystemPrompt } from "@/data/Prompt";
-import { AgentConfigRespSchema } from "@/data/ResponseSchema";
+export async function PUT(req: NextRequest) {
+    const { agentConfig } = await req.json();
+    console.log("Updating Agent Config:", agentConfig);
 
-export async function POST(req: NextRequest) {
-
-    const {prompt}=await req.json();
-
-    if(!prompt.trim()){
-        return NextResponse.json({error:"Prompt is required"}, {status:400});
+    if (!agentConfig?.agentId) {
+        return NextResponse.json({ error: "agentId is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.GOOGLE_CLOUD_GEMINI_API_KEY;
+    const {
+        name,
+        agentImage,
+        description,
+        instructions,
+        objective,
+        tools,
+        skills,
+        schedule,
+        status,
+        outputFormat,
+    } = agentConfig;
 
-    try{
-        const ai = new GoogleGenAI({ apiKey });
-
-        const response = await ai.models.generateContent({
-            model:'gemini-3.6-flash',
-            contents:AgentConfigSystemPrompt.replace("{USER_PROMPT}",prompt),
-            config:{
-                thinkingConfig: {thinkingLevel:ThinkingLevel.MEDIUM},
-                responseMimeType: "application/json",
-                responseSchema: AgentConfigRespSchema
-            }
+    const result = await db
+        .update(AgentConfig)
+        .set({
+            name,
+            agentImage,
+            description,
+            instructions,
+            objective,
+            tools,
+            skills,
+            schedule,
+            status,
+            outputFormat,
+            updatedAt: new Date(),
         })
+        .where(eq(AgentConfig.agentId, agentConfig.agentId))
+        .returning();
 
-        return NextResponse.json(JSON.parse(response.text??"{}"));
+    if (!result[0]) {
+        return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    }
 
-    }catch (e) {
-    console.error("GEMINI ERROR:", e);
+    console.log("Updated Agent Config:", result[0]);
 
-    return NextResponse.json(
-        {
-            error: e instanceof Error ? e.message : String(e)
-        },
-        { status: 500 }
-    );
+    return NextResponse.json({ ...result[0], status_: 'updated' });
 }
-}
-*/
