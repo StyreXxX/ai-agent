@@ -119,6 +119,14 @@ function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
             agentConfig: draftAgent
         })
         console.log(result.data);
+        if(result.data?.error){
+            toast.add({
+            title: "Error",
+            type: result.data?.error,
+            });
+            return;
+        }
+
         //Update agent to parent
         setUpdatedAgent(draftAgent);
         toast.add({
