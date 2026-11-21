@@ -10,7 +10,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
@@ -43,31 +42,32 @@ const AVAILABLE_TOOLS: EditableTool[] = [
 ]
 
 type Props = {
-    children: any
-    agentConfig: CreatedAgentType | null
-    setUpdatedAgent: any
+    agentConfig: CreatedAgentType
+    setUpdatedAgent: (agent: CreatedAgentType) => void
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
-function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
+function AgentEditSheet({ agentConfig, setUpdatedAgent, open, onOpenChange }: Props) {
 
-    const [draftAgent, setDraftAgent] = useState<any>(agentConfig)
+    const [draftAgent, setDraftAgent] = useState<CreatedAgentType>(agentConfig)
     const [skillInput, setSkillInput] = useState("")
     const [tools, setTools] = useState<EditableTool[]>(AVAILABLE_TOOLS)
-    const [openSheet, setOpenSheet] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     useEffect(() => {
         setDraftAgent(agentConfig)
     }, [agentConfig])
 
-    const updateDraft = (key: string, value: any) => {
-        setDraftAgent((prev: any) => ({
+    const updateDraft = <K extends keyof CreatedAgentType>(key: K, value: CreatedAgentType[K]) => {
+        setDraftAgent((prev) => ({
             ...prev,
             [key]: value,
         }))
     }
 
-    const updateSchedule = (key: keyof AgentSchedule, value: any) => {
-        setDraftAgent((prev: any) => ({
+    const updateSchedule = <K extends keyof AgentSchedule>(key: K, value: AgentSchedule[K]) => {
+        setDraftAgent((prev) => ({
             ...prev,
             schedule: {
                 ...prev?.schedule,
@@ -112,35 +112,44 @@ function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
         )
     }
 
-    const handleSubmit =async  (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        //save to DB
-        const result =await  axios.put('/api/agent/configure',{
-            agentConfig: draftAgent
-        })
-        console.log(result.data);
-        if(result.data?.error){
-            toast.add({
-            title: "Error",
-            type: result.data?.error,
-            });
-            return;
-        }
+        setSaving(true)
 
-        //Update agent to parent
-        setUpdatedAgent(draftAgent);
-        toast.add({
-        title: "Agent Updated",
-        type: "success",
-        })
-        setOpenSheet(false);
+        try {
+            const result = await axios.put('/api/agent/configure', {
+                agentConfig: draftAgent
+            })
+
+            if (result.data?.error) {
+                toast.add({
+                    title: result.data.error,
+                    type: "error",
+                })
+                return
+            }
+
+            setUpdatedAgent(result.data)
+            toast.add({
+                title: "Agent Updated",
+                type: "success",
+            })
+            onOpenChange(false)
+        } catch (error) {
+            console.error('Unable to update agent:', error)
+            toast.add({
+                title: "Unable to update agent",
+                type: "error",
+            })
+        } finally {
+            setSaving(false)
+        }
     }
 
     const isRecurring = draftAgent?.schedule?.type === "recurring"
 
     return (
-    <Sheet open={openSheet} onOpenChange={setOpenSheet}>
-        <SheetTrigger render={children} />
+    <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent>
             <form onSubmit={handleSubmit} className='flex min-h-0 flex-1 flex-col overflow-y-auto'>
             <SheetHeader className='border-b py-4'>
@@ -230,7 +239,9 @@ function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
                             <Label>Run type</Label>
                             <Select
                                 value={draftAgent?.schedule?.type ?? 'manual'}
-                                onValueChange={(value) => updateSchedule('type', value)}
+                                onValueChange={(value) => {
+                                    if (value) updateSchedule('type', value)
+                                }}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder='Select run type' />
@@ -260,7 +271,16 @@ function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
                             <Label>Frequency</Label>
                             <Select
                                 value={draftAgent?.schedule?.frequency ?? ''}
-                                onValueChange={(value) => updateSchedule('frequency', value)}
+                                onValueChange={(value) => {
+                                    if (
+                                        value === 'hourly' ||
+                                        value === 'daily' ||
+                                        value === 'weekly' ||
+                                        value === 'monthly'
+                                    ) {
+                                        updateSchedule('frequency', value)
+                                    }
+                                }}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder='Select frequency' />
@@ -372,7 +392,9 @@ function AgentEditSheet({ children, agentConfig, setUpdatedAgent }: Props) {
             <SheetFooter className='border-t'>
                 <div className='flex justify-end gap-2.5'>
                     <SheetClose render={<Button variant='outline' type='button'>Cancel</Button>} />
-                    <Button className={'bg-purple-700'} type="submit">Save Changes</Button>
+                    <Button className={'bg-purple-700'} type="submit" disabled={saving}>
+                        {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
                 </div>
             </SheetFooter>
             </form>

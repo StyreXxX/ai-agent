@@ -7,7 +7,7 @@ function AgentsPage() {
   return (
     <div className = "w-full flex justify-center">
       <div className='w-full max-w-3xl px-6 pt-8 pb-16'>
-        <Tabs defaultValue="create-agent" className="w-full">
+        <Tabs defaultValue="my-agents" className="w-full">
             <TabsList>
                 <TabsTrigger value="create-agent">Create Agent</TabsTrigger>
                 <TabsTrigger value="my-agents">My Agents</TabsTrigger>

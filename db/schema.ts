@@ -66,6 +66,7 @@ export const AgentConfig = pgTable("agentConfig", {
     schedule: jsonb("schedule"),
     status: varchar('status').default('active'), //Active, pause
     outputFormat: text("outputFormat"),
+    ComposioSessionID: varchar("ComposioSessionID"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
